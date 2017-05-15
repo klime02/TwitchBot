@@ -18,8 +18,8 @@ def sendMessage(s, message):
 
 # Connect to Riot API
 w = RiotWatcher(cfg.RiotAPI)
-playerName = "Shiphtur"
-playerRegion = "NA"
+playerName = cfg.playerName
+playerRegion = cfg.playerRegion
 
 
 while True:
