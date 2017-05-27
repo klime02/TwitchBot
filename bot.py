@@ -4,12 +4,15 @@ import socket
 import random
 from riotwatcher import RiotWatcher
 
+
 # Connect to twitch chat
 s = socket.socket()
 s.connect((cfg.HOST, cfg.PORT))
 s.send(("PASS " + cfg.PASS + "\r\n").encode('utf-8'))
 s.send(("NICK " + cfg.NICK + "\r\n").encode('utf-8'))
 s.send(("JOIN #" + cfg.CHAN + "\r\n").encode('utf-8'))
+
+
 def sendMessage(s, message):
     messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
     s.send((messageTemp + "\r\n").encode('utf-8'))
@@ -17,7 +20,7 @@ def sendMessage(s, message):
 
 
 # Connect to Riot API
-w = RiotWatcher(cfg.RiotAPI)
+w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
 playerName = cfg.playerName
 playerRegion = cfg.playerRegion
 
@@ -28,15 +31,23 @@ while True:
         s.send(("PONG :tmi.twitch.tv\r\n".encode("utf-8")))
     chatMessage = ""
     chatName = ""
-    countc = 0
+    messagePC = 0
+    nameEnd = []
+    hashtagEnd = []
     nameLength = len(cfg.CHAN)
-    while countc<(len(inc)):
-        if inc[countc] == "#":
-            chatMessage = inc[(countc+nameLength+3):(len(inc)-2)]
-            print(chatName + ": " + chatMessage)
-        elif inc[countc] == "!":
-            chatName = inc[1:(countc - 1)]
-        countc += 1
+    while messagePC<len(inc):
+        if inc[messagePC] == "!":
+            nameEnd.append(messagePC)
+            messagePC += 1
+        elif inc[messagePC] == "#":
+            hashtagEnd.append(messagePC)
+            messagePC += 1
+        else:
+            messagePC += 1
+    if len(nameEnd) > 0 and len(hashtagEnd) > 0:
+        chatName = inc[1:nameEnd[0]]
+        chatMessage = inc[(hashtagEnd[0]+nameLength+3):(len(inc)-2)]
+        print(chatName + ": " + chatMessage)
     if chatMessage == "!ping":
         sendMessage(s, "Pong! Im alive!")
         time.sleep(1 / (cfg.RATE))
@@ -73,8 +84,6 @@ while True:
         time.sleep(2)
         sendMessage(s, "Kappa Kappa Kappa")
         time.sleep(2)
-    elif "!cam" in chatMessage:
-        sendMessage(s, "Unfortunately, pobelter had to sell his camera to buy ramen. FeelsBadMan")
     elif "!roulette2" in chatMessage:
         ranGun = random.randint(1, 6)
         if ranGun == 6:
