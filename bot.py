@@ -3,6 +3,7 @@ import cfg
 import socket
 import random
 from riotwatcher import RiotWatcher
+from twitch import TwitchClient
 
 
 # Connect to twitch chat
@@ -21,9 +22,17 @@ def sendMessage(s, message):
 
 # Connect to Riot API
 w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
-playerName = cfg.playerName
-playerRegion = cfg.playerRegion
 
+#Connect to Twitch API
+client = TwitchClient(client_id=cfg.TwitchAPI)
+channelID = ((client.users.translate_usernames_to_ids(cfg.CHAN))[0])["id"]
+
+#Chatter test system
+chattersTest = False
+chatterTestPeriod = 600
+startTime= 0
+deltaTime = 0
+chatters = []
 
 while True:
     inc = s.recv(1024).decode("utf-8")
@@ -48,14 +57,23 @@ while True:
         chatName = inc[1:nameEnd[0]]
         chatMessage = inc[(hashtagEnd[0]+nameLength+3):(len(inc)-2)]
         print(chatName + ": " + chatMessage)
+    if chattersTest is True:
+        deltaTime = int("%.0f" % (time.time() - startTime))
+        if chatName not in chatters and deltaTime <= chatterTestPeriod:
+            print("Added " + chatName)
+            chatters.append(chatName)
+            print(str(len(chatters)))
+        elif deltaTime>chatterTestPeriod:
+            chattersTest = False
+            viewerNumber = (client.streams.get_stream_by_user(channelID))["viewers"]
+            fractionViewers = "%.2f" % ((len(chatters)/viewerNumber) * 100)
+            sendMessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
     if chatMessage == "!ping":
         sendMessage(s, "Pong! Im alive!")
         time.sleep(1 / (cfg.RATE))
     elif chatMessage == "!LUL":
         sendMessage(s, "LUL LUL LUL")
         time.sleep(1 / (cfg.RATE))
-    elif chatMessage == "!quit":
-        quit()
     elif "!espam" in chatMessage:
         spaceloc = []
         spcc = 0
@@ -95,20 +113,25 @@ while True:
             time.sleep(2)
             sendMessage(s, "You survive! FeelsGoodMan")
     elif chatMessage == "!rank":
-        summoner = w.get_summoner(name=playerName, region=playerRegion)
-        rankedStatsList = w.get_league_entry([summoner["id"]], )[str(summoner["id"])]
-        rankedStatsList2 = rankedStatsList[0]
-        playerTier = rankedStatsList2["tier"]
-        rankedStatsList3 = rankedStatsList2["entries"]
-        rankedStatsDic = rankedStatsList3[0]
-        playerDivsion = rankedStatsDic["division"]
-        playerLP = rankedStatsDic["leaguePoints"]
-        sendMessage(s,playerName + " current rank is " + playerTier + " " + playerDivsion + " " + str(playerLP) + " LP")
-
-
-
-
-
-
+        summoner = w.get_summoner(name=cfg.playerName, region=cfg.playerRegion)
+        rankedStatsList = (w.get_league_entry([summoner["id"]], )[str(summoner["id"])])[0]
+        sendMessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + ((rankedStatsList["entries"])[0])["division"] + " " + str(((rankedStatsList["entries"])[0])["leaguePoints"]) + " LP")
+    elif chatMessage == "!chatters2":
+        sendMessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
+        chattersTest = True
+        startTime= time.time()
+    elif chatMessage == "!krippfollow":
+        a = 0
+        while True:
+            if a%2 == 0:
+                follownumber = client.channels.get_by_id(channelID)["followers"]
+                sendMessage(s,str(1000000 - follownumber) + " away from the button monkaS @klime02 @bulgarianak47 @1jijing1")
+                time.sleep(10)
+                a = a+1
+            else:
+                follownumber = client.channels.get_by_id(channelID)["followers"]
+                sendMessage(s, str(1000000 - follownumber) + " away from the button monkaS @bulgarianak47 @1jijing1")
+                time.sleep(10)
+                a = a+1
 
 
