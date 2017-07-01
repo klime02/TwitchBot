@@ -22,7 +22,6 @@ def sendMessage(s, message):
 
 # Connect to Riot API
 w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
-
 #Connect to Twitch API
 client = TwitchClient(client_id=cfg.TwitchAPI)
 channelID = ((client.users.translate_usernames_to_ids(cfg.CHAN))[0])["id"]
@@ -120,18 +119,16 @@ while True:
         sendMessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
         startTime= time.time()
-    elif chatMessage == "!krippfollow":
-        a = 0
-        while True:
-            if a%2 == 0:
-                follownumber = client.channels.get_by_id(channelID)["followers"]
-                sendMessage(s,str(1000000 - follownumber) + " away from the button monkaS @klime02 @bulgarianak47 @1jijing1")
-                time.sleep(10)
-                a = a+1
-            else:
-                follownumber = client.channels.get_by_id(channelID)["followers"]
-                sendMessage(s, str(1000000 - follownumber) + " away from the button monkaS @bulgarianak47 @1jijing1")
-                time.sleep(10)
-                a = a+1
-
-
+    elif chatMessage == "!ispobrank1":
+        challData = w.get_challenger(region=cfg.playerRegion)["entries"]
+        challList = []
+        for challCount in challData:
+            challList.append(challCount["leaguePoints"])
+        challList = sorted(challList,reverse=True)
+        print(challList)
+        summoner = w.get_summoner(name=cfg.playerName, region=cfg.playerRegion)
+        rankedStatsList = (w.get_league_entry([summoner["id"]], )[str(summoner["id"])])[0]
+        if (((rankedStatsList["entries"])[0])["leaguePoints"]) == challList[0]:
+            sendMessage(s,"Yes! Pobelter is Rank 1 with " + str((((rankedStatsList["entries"])[0])["leaguePoints"])) + " LP")
+        else:
+            sendMessage(s,"No FeelsBadMan")
