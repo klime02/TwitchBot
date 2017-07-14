@@ -26,7 +26,7 @@ w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
 client = TwitchClient(client_id=cfg.TwitchAPI)
 channelID = ((client.users.translate_usernames_to_ids(cfg.CHAN))[0])["id"]
 
-#Chatter test system
+# Chatter test system
 chattersTest = False
 chatterTestPeriod = 600
 startTime= 0
