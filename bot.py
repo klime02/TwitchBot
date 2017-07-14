@@ -69,31 +69,17 @@ while True:
             sendMessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
     if chatMessage == "!ping":
         sendMessage(s, "Pong! Im alive!")
-        time.sleep(1 / (cfg.RATE))
     elif chatMessage == "!LUL":
         sendMessage(s, "LUL LUL LUL")
-        time.sleep(1 / (cfg.RATE))
     elif "!espam" in chatMessage:
-        spaceloc = []
-        spcc = 0
-        for spc in chatMessage:
-            if spc == " ":
-                spaceloc.append(spcc)
-                spcc += 1
-            else:
-                spcc += 1
-        toCopyEmote = chatMessage[(spaceloc[0] + 1):(spaceloc[1])]
-        toCopyMsg = chatMessage[(spaceloc[1] + 1):(len(chatMessage))]
-        finalSpam = ""
-        for placeSpam in toCopyMsg:
-            if placeSpam == " ":
-                pass
-            else:
-                semiSpam = toCopyEmote + " " + placeSpam + " "
-                finalSpam = finalSpam + semiSpam
-        twitchSpam = finalSpam + " " + toCopyEmote
-        sendMessage(s, twitchSpam)
-        time.sleep(1 / (cfg.RATE))
+        wordSpam = chatMessage.split()[1]
+        emoteSpam = chatMessage.split()[2]
+        finalSpam = emoteSpam
+        countSpam = 0
+        while countSpam < len(wordSpam):
+            finalSpam = finalSpam + " " + wordSpam[countSpam] + " " + emoteSpam
+            countSpam +=1
+        sendMessage(s,finalSpam)
     elif chatMessage == "!memebox":
         sendMessage(s, "Kappa Kappa Kappa")
         time.sleep(2)
