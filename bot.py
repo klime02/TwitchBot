@@ -19,10 +19,10 @@ def sendMessage(s, message):
     s.send((messageTemp + "\r\n").encode('utf-8'))
     print("Sent: " + messageTemp)
 
-
 # Connect to Riot API
 w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
-#Connect to Twitch API
+
+# Connect to Twitch API
 client = TwitchClient(client_id=cfg.TwitchAPI)
 channelID = ((client.users.translate_usernames_to_ids(cfg.CHAN))[0])["id"]
 
