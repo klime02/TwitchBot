@@ -75,10 +75,8 @@ while True:
         wordSpam = chatMessage.split()[1]
         emoteSpam = chatMessage.split()[2]
         finalSpam = emoteSpam
-        countSpam = 0
-        while countSpam < len(wordSpam):
-            finalSpam = finalSpam + " " + wordSpam[countSpam] + " " + emoteSpam
-            countSpam +=1
+        for letter in wordSpam:
+            finalSpam = finalSpam + " " + letter + " " + emoteSpam
         sendMessage(s,finalSpam)
     elif chatMessage == "!memebox":
         sendMessage(s, "Kappa Kappa Kappa")
@@ -105,16 +103,15 @@ while True:
         sendMessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
         startTime= time.time()
-    elif chatMessage == "!ispobrank1":
+    elif chatMessage == "!rank1":
         challData = w.get_challenger(region=cfg.playerRegion)["entries"]
         challList = []
         for challCount in challData:
             challList.append(challCount["leaguePoints"])
         challList = sorted(challList,reverse=True)
-        print(challList)
         summoner = w.get_summoner(name=cfg.playerName, region=cfg.playerRegion)
         rankedStatsList = (w.get_league_entry([summoner["id"]], )[str(summoner["id"])])[0]
         if (((rankedStatsList["entries"])[0])["leaguePoints"]) == challList[0]:
-            sendMessage(s,"Yes! Pobelter is Rank 1 with " + str((((rankedStatsList["entries"])[0])["leaguePoints"])) + " LP")
+            sendMessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str((((rankedStatsList["entries"])[0])["leaguePoints"])) + " LP")
         else:
             sendMessage(s,"No FeelsBadMan")
