@@ -5,6 +5,22 @@ import random
 from riotwatcher import RiotWatcher
 from twitch import TwitchClient
 
+print("Starting")
+
+# Connect to Riot API
+watcher = RiotWatcher(cfg.RiotAPI)
+playerData = watcher.summoner.by_name(cfg.playerRegion,cfg.playerName)
+print("Connected to Riot API")
+
+# Connect to Twitch API
+client = TwitchClient(client_id=cfg.TwitchAPI,oauth_token=cfg.PASS)
+channelID = client.users.translate_usernames_to_ids(cfg.CHAN)[0]["id"]
+print("Connected to Twitch API")
+
+def sendMessage(s, message):
+    messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
+    s.send((messageTemp + "\r\n").encode('utf-8'))
+    print("Sent: " + messageTemp)
 
 # Connect to twitch chat
 s = socket.socket()
@@ -12,19 +28,6 @@ s.connect((cfg.HOST, cfg.PORT))
 s.send(("PASS " + cfg.PASS + "\r\n").encode('utf-8'))
 s.send(("NICK " + cfg.NICK + "\r\n").encode('utf-8'))
 s.send(("JOIN #" + cfg.CHAN + "\r\n").encode('utf-8'))
-
-
-def sendMessage(s, message):
-    messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
-    s.send((messageTemp + "\r\n").encode('utf-8'))
-    print("Sent: " + messageTemp)
-
-# Connect to Riot API
-w = RiotWatcher(cfg.RiotAPI,default_region=cfg.playerRegion)
-
-# Connect to Twitch API
-client = TwitchClient(client_id=cfg.TwitchAPI)
-channelID = ((client.users.translate_usernames_to_ids(cfg.CHAN))[0])["id"]
 
 # Parameters for number of chatters
 chattersTest = False
@@ -96,22 +99,20 @@ while True:
             time.sleep(2)
             sendMessage(s, "You survive! FeelsGoodMan")
     elif chatMessage == "!rank":
-        summoner = w.get_summoner(name=cfg.playerName, region=cfg.playerRegion)
-        rankedStatsList = (w.get_league_entry([summoner["id"]], )[str(summoner["id"])])[0]
-        sendMessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + ((rankedStatsList["entries"])[0])["division"] + " " + str(((rankedStatsList["entries"])[0])["leaguePoints"]) + " LP")
+        rankedStatsList = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]
+        sendMessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
     elif chatMessage == "!chatters2":
         sendMessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
         startTime= time.time()
     elif chatMessage == "!rank1":
-        challData = w.get_challenger(region=cfg.playerRegion)["entries"]
-        challList = []
+        challData = watcher.league.challenger_by_queue(cfg.playerRegion,cfg.playerQue)["entries"]
+        challNamesLP = {}
         for challCount in challData:
-            challList.append(challCount["leaguePoints"])
-        challList = sorted(challList,reverse=True)
-        summoner = w.get_summoner(name=cfg.playerName, region=cfg.playerRegion)
-        rankedStatsList = (w.get_league_entry([summoner["id"]], )[str(summoner["id"])])[0]
-        if (((rankedStatsList["entries"])[0])["leaguePoints"]) == challList[0]:
-            sendMessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str((((rankedStatsList["entries"])[0])["leaguePoints"])) + " LP")
+            challNamesLP[challCount["playerOrTeamName"]] = challCount["leaguePoints"]
+        challNamesLPSorted = sorted(challNamesLP, key=challNamesLP.get, reverse=True)
+        playerLP = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]["leaguePoints"]
+        if cfg.playerName == challNamesLPSorted[0]:
+            sendMessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
         else:
-            sendMessage(s,"No FeelsBadMan")
+            sendMessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1")
