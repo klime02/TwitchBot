@@ -11,6 +11,7 @@ print("Starting")
 watcher = RiotWatcher(cfg.RiotAPI)
 playerData = watcher.summoner.by_name(cfg.playerRegion,cfg.playerName)
 print("Connected to Riot API")
+print(playerData)
 
 # Connect to Twitch API
 client = TwitchClient(client_id=cfg.TwitchAPI,oauth_token=cfg.PASS)
@@ -115,4 +116,14 @@ while True:
         if cfg.playerName == challNamesLPSorted[0]:
             sendMessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
         else:
-            sendMessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1")
+            sendMessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 NA is currently " + str(challNamesLPSorted[0]))
+    elif chatMessage == "!runes":
+        runeSetup = cfg.playerName + "s current rune page is: "
+        for player in watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"]:
+            if player["summonerName"] == cfg.playerName:
+                for rune in player["runes"]:
+                    for runeNum, runeName in cfg.allRunes.items():
+                        if rune["runeId"] == runeNum:
+                            runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
+
+        sendMessage(s,runeSetup)
