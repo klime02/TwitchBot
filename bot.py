@@ -11,12 +11,12 @@ print("Starting")
 watcher = RiotWatcher(cfg.RiotAPI)
 playerData = watcher.summoner.by_name(cfg.playerRegion,cfg.playerName)
 print("Connected to Riot API")
-print(playerData)
 
 # Connect to Twitch API
 client = TwitchClient(client_id=cfg.TwitchAPI,oauth_token=cfg.PASS)
 channelID = client.users.translate_usernames_to_ids(cfg.CHAN)[0]["id"]
 print("Connected to Twitch API")
+
 
 def sendMessage(s, message):
     messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
@@ -71,7 +71,7 @@ while True:
             viewerNumber = (client.streams.get_stream_by_user(channelID))["viewers"]
             fractionViewers = "%.2f" % ((len(chatters)/viewerNumber) * 100)
             sendMessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
-    if chatMessage == "!ping":
+    elif chatMessage == "!ping":
         sendMessage(s, "Pong! Im alive!")
     elif chatMessage == "!LUL":
         sendMessage(s, "LUL LUL LUL")
@@ -126,4 +126,4 @@ while True:
                         if rune["runeId"] == runeNum:
                             runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
 
-        sendMessage(s,runeSetup)
+        sendMessage(s, runeSetup)
