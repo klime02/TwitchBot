@@ -9,7 +9,7 @@ print("Starting")
 
 # Connect to Riot API
 watcher = RiotWatcher(cfg.RiotAPI)
-playerData = watcher.summoner.by_name(cfg.playerRegion,cfg.playerName)
+playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)
 print("Connected to Riot API")
 
 # Connect to Twitch API
@@ -18,7 +18,7 @@ channelID = client.users.translate_usernames_to_ids(cfg.CHAN)[0]["id"]
 print("Connected to Twitch API")
 
 
-def sendMessage(s, message):
+def sendmessage(s, message):
     messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
     s.send((messageTemp + "\r\n").encode('utf-8'))
     print("Sent: " + messageTemp)
@@ -70,40 +70,40 @@ while True:
             chattersTest = False
             viewerNumber = (client.streams.get_stream_by_user(channelID))["viewers"]
             fractionViewers = "%.2f" % ((len(chatters)/viewerNumber) * 100)
-            sendMessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
+            sendmessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
     elif chatMessage == "!ping":
-        sendMessage(s, "Pong! Im alive!")
+        sendmessage(s, "Pong! Im alive!")
     elif chatMessage == "!LUL":
-        sendMessage(s, "LUL LUL LUL")
+        sendmessage(s, "LUL LUL LUL")
     elif "!espam" in chatMessage:
         wordSpam = chatMessage.split()[1]
         emoteSpam = chatMessage.split()[2]
         finalSpam = emoteSpam
         for letter in wordSpam:
             finalSpam = finalSpam + " " + letter + " " + emoteSpam
-        sendMessage(s,finalSpam)
+        sendmessage(s,finalSpam)
     elif chatMessage == "!memebox":
-        sendMessage(s, "Kappa Kappa Kappa")
+        sendmessage(s, "Kappa Kappa Kappa")
         time.sleep(2)
-        sendMessage(s, "Kappa PogChamp Kappa")
+        sendmessage(s, "Kappa PogChamp Kappa")
         time.sleep(2)
-        sendMessage(s, "Kappa Kappa Kappa")
+        sendmessage(s, "Kappa Kappa Kappa")
         time.sleep(2)
     elif "!roulette2" in chatMessage:
         ranGun = random.randint(1, 6)
         if ranGun == 6:
-            sendMessage(s, "The gun clicks FeelsBadMan :gun: ")
+            sendmessage(s, "The gun clicks FeelsBadMan :gun: ")
             time.sleep(2)
-            sendMessage(s, "BOOM. You're dead FeelsBadMan")
-        else:
-            sendMessage(s, "The gun clicks FeelsBadMan :gun: ")
+            sendmessage(s, "BOOM. You're dead FeelsBadMan")
+        else: 
+            sendmessage(s, "The gun clicks FeelsBadMan :gun: ")
             time.sleep(2)
-            sendMessage(s, "You survive! FeelsGoodMan")
+            sendmessage(s, "You survive! FeelsGoodMan")
     elif chatMessage == "!rank":
         rankedStatsList = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]
-        sendMessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
+        sendmessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
     elif chatMessage == "!chatters2":
-        sendMessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
+        sendmessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
         startTime= time.time()
     elif chatMessage == "!rank1":
@@ -114,9 +114,9 @@ while True:
         challNamesLPSorted = sorted(challNamesLP, key=challNamesLP.get, reverse=True)
         playerLP = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]["leaguePoints"]
         if cfg.playerName == challNamesLPSorted[0]:
-            sendMessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
+            sendmessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
         else:
-            sendMessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 NA is currently " + str(challNamesLPSorted[0]))
+            sendmessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 " + cfg.playerRegion + " is currently " + str(challNamesLPSorted[0]))
     elif chatMessage == "!runes":
         runeSetup = cfg.playerName + "s current rune page is: "
         for player in watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"]:
@@ -126,4 +126,4 @@ while True:
                         if rune["runeId"] == runeNum:
                             runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
 
-        sendMessage(s, runeSetup)
+        sendmessage(s, runeSetup)
