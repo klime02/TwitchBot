@@ -13,15 +13,53 @@ playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)
 print("Connected to Riot API")
 
 # Connect to Twitch API
-client = TwitchClient(client_id=cfg.TwitchAPI,oauth_token=cfg.PASS)
+client = TwitchClient(client_id=cfg.TwitchAPI, oauth_token=cfg.PASS)
 channelID = client.users.translate_usernames_to_ids(cfg.CHAN)[0]["id"]
 print("Connected to Twitch API")
 
 
 def sendmessage(s, message):
-    messageTemp = "PRIVMSG #" + cfg.CHAN + " :" + message
-    s.send((messageTemp + "\r\n").encode('utf-8'))
-    print("Sent: " + messageTemp)
+    messagetemp = "PRIVMSG #" + cfg.CHAN + " :" + message
+    s.send((messagetemp + "\r\n").encode('utf-8'))
+    print("Sent: " + messagetemp)
+
+
+def elo(playersIN):
+    currentPlayers = playersIN
+    currentPlayersLP = []
+    for thePlayer in currentPlayers:
+        theirData = (watcher.league.positions_by_summoner(cfg.playerRegion, thePlayer["summonerId"]))[0]
+        theirLP = theirData["leaguePoints"]
+        if theirData["tier"] == "DIAMOND":
+            theirLP = theirLP + 2000
+            if theirData["rank"] == "IV":
+                theirLP = theirLP + 100
+            if theirData["rank"] == "III":
+                theirLP = theirLP + 200
+            if theirData["rank"] == "II":
+                theirLP = theirLP + 300
+            if theirData["rank"] == "I":
+                theirLP = theirLP + 400
+        elif theirData["tier"] == "MASTER" or "CHALLENGER":
+            theirLP = theirLP + 2500
+        else:
+            print("ERROR: " + theirData["playerOrTeamName"] + " is below Diamond!")
+        currentPlayersLP.append(theirLP)
+    averageLP = int(sum(currentPlayersLP)/len(currentPlayersLP))
+    if averageLP > 2500:
+        sendmessage(s, "Average player rank in this game: " + str(averageLP - 2500) + " LP")
+    elif 2500 >= averageLP > 2400:
+        sendmessage(s, "Average player rank in this game: DIAMOND I " + str(averageLP - 2400) + " LP")
+    elif 2400 >= averageLP > 2300:
+        sendmessage(s, "Average player rank in this game: DIAMOND II " + str(averageLP - 2300) + " LP")
+    elif 2300 >= averageLP > 2200:
+        sendmessage(s, "Average player rank in this game: DIAMOND III " + str(averageLP - 2200) + " LP")
+    elif 2200 >= averageLP > 2100:
+        sendmessage(s, "Average player rank in this game: DIAMOND IV " + str(averageLP - 2100) + " LP")
+    elif 2100 >= averageLP > 2000:
+        sendmessage(s, "Average player rank in this game: DIAMOND V " + str(averageLP - 2000) + " LP")
+    elif averageLP <= 2000:
+        print("Average LP is lower than Diamond!")
 
 # Connect to twitch chat
 s = socket.socket()
@@ -33,7 +71,7 @@ s.send(("JOIN #" + cfg.CHAN + "\r\n").encode('utf-8'))
 # Parameters for number of chatters
 chattersTest = False
 chatterTestPeriod = 600
-startTime= 0
+startTime = 0
 deltaTime = 0
 chatters = []
 
@@ -101,7 +139,7 @@ while True:
             sendmessage(s, "You survive! FeelsGoodMan")
     elif chatMessage == "!rank":
         rankedStatsList = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]
-        sendmessage(s,cfg.playerName + " current rank is " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
+        sendmessage(s, "@" + chatName + " " + cfg.playerName + " is currently " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
     elif chatMessage == "!chatters2":
         sendmessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
@@ -127,3 +165,5 @@ while True:
                             runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
 
         sendmessage(s, runeSetup)
+    elif chatMessage == "!elo":
+        elo(watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"])
