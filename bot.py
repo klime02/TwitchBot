@@ -75,6 +75,9 @@ startTime = 0
 deltaTime = 0
 chatters = []
 
+# Current time for APi refresh
+beginTime = time.time()
+
 while True:
     inc = s.recv(1024).decode("utf-8")
     if inc == "PING :tmi.twitch.tv\r\n":
@@ -85,6 +88,7 @@ while True:
     nameEnd = []
     hashtagEnd = []
     nameLength = len(cfg.CHAN)
+
     while messagePC<len(inc):
         if inc[messagePC] == "!":
             nameEnd.append(messagePC)
@@ -111,8 +115,8 @@ while True:
             sendmessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
     elif chatMessage == "!ping":
         sendmessage(s, "Pong! Im alive!")
-    elif chatMessage == "!LUL":
-        sendmessage(s, "LUL LUL LUL")
+    elif chatMessage == "!LuL":
+        sendmessage(s, "LuL LuL LuL")
     elif "!espam" in chatMessage:
         wordSpam = chatMessage.split()[1]
         emoteSpam = chatMessage.split()[2]
@@ -165,5 +169,5 @@ while True:
                             runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
 
         sendmessage(s, runeSetup)
-    elif chatMessage == "!elo":
+    elif chatMessage == "!teamelo":
         elo(watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"])
