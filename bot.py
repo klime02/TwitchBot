@@ -7,6 +7,8 @@ from twitch import TwitchClient
 
 print("Starting")
 
+print("Test")
+
 # Connect to Riot API
 watcher = RiotWatcher(cfg.RiotAPI)
 playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)
@@ -158,7 +160,7 @@ while True:
         if cfg.playerName == challNamesLPSorted[0]:
             sendmessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
         else:
-            sendmessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 " + cfg.playerRegion + " is currently " + str(challNamesLPSorted[0]))
+            sendmessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 is currently " + str(challNamesLPSorted[0]))
     elif chatMessage == "!runes":
         runeSetup = cfg.playerName + "s current rune page is: "
         for player in watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"]:
