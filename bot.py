@@ -7,8 +7,6 @@ from twitch import TwitchClient
 
 print("Starting")
 
-print("Test")
-
 # Connect to Riot API
 watcher = RiotWatcher(cfg.RiotAPI)
 playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)

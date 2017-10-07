@@ -1,2 +1,0 @@
-# TwitchBot
-A twitch bot
