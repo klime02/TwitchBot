@@ -8,9 +8,10 @@ from twitch import TwitchClient
 print("Starting")
 
 # Connect to Riot API
-watcher = RiotWatcher(cfg.RiotAPI)
-playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)
-print("Connected to Riot API")
+if cfg.selection == "y":
+    watcher = RiotWatcher(cfg.RiotAPI)
+    playerData = watcher.summoner.by_name(cfg.playerRegion, cfg.playerName)
+    print("Connected to Riot API")
 
 # Connect to Twitch API
 client = TwitchClient(client_id=cfg.TwitchAPI, oauth_token=cfg.PASS)
@@ -60,6 +61,7 @@ def elo(playersIN):
         sendmessage(s, "Average player rank in this game: DIAMOND V " + str(averageLP - 2000) + " LP")
     elif averageLP <= 2000:
         print("Average LP is lower than Diamond!")
+
 
 # Connect to twitch chat
 s = socket.socket()
@@ -112,7 +114,7 @@ while True:
             chattersTest = False
             viewerNumber = (client.streams.get_stream_by_user(channelID))["viewers"]
             fractionViewers = "%.2f" % ((len(chatters)/viewerNumber) * 100)
-            sendmessage(s,"Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
+            sendmessage(s, "Number of active people in chat is " + str(len(chatters)) + ". This is " + str(fractionViewers) + "% of the viewers.")
     elif chatMessage == "!ping":
         sendmessage(s, "Pong! Im alive!")
     elif chatMessage == "!LuL":
@@ -123,7 +125,7 @@ while True:
         finalSpam = emoteSpam
         for letter in wordSpam:
             finalSpam = finalSpam + " " + letter + " " + emoteSpam
-        sendmessage(s,finalSpam)
+        sendmessage(s, finalSpam)
     elif chatMessage == "!memebox":
         sendmessage(s, "Kappa Kappa Kappa")
         time.sleep(2)
@@ -141,14 +143,14 @@ while True:
             sendmessage(s, "The gun clicks FeelsBadMan :gun: ")
             time.sleep(2)
             sendmessage(s, "You survive! FeelsGoodMan")
-    elif chatMessage == "!rank":
+    elif chatMessage == "!rank" and cfg.selection == "y":
         rankedStatsList = (watcher.league.positions_by_summoner(cfg.playerRegion,playerData["id"]))[0]
         sendmessage(s, "@" + chatName + " " + cfg.playerName + " is currently " + rankedStatsList["tier"] + " " + rankedStatsList["rank"] + " " + str(rankedStatsList["leaguePoints"]) + " LP")
     elif chatMessage == "!chatters2":
         sendmessage(s,"Running chatter count checks. " + str(chatterTestPeriod) + " second run")
         chattersTest = True
         startTime= time.time()
-    elif chatMessage == "!rank1":
+    elif chatMessage == "!rank1" and cfg.selection == "y":
         challData = watcher.league.challenger_by_queue(cfg.playerRegion,cfg.playerQue)["entries"]
         challNamesLP = {}
         for challCount in challData:
@@ -159,15 +161,16 @@ while True:
             sendmessage(s,"Yes! " + cfg.playerName + " is Rank 1 with " + str(playerLP) + " LP")
         else:
             sendmessage(s,"No FeelsBadMan " + cfg.playerName + " is currently " + str(challNamesLP[str(challNamesLPSorted[0])] - (playerLP)) + " LP away from Rank 1. Rank 1 is currently " + str(challNamesLPSorted[0]))
-    elif chatMessage == "!runes":
-        runeSetup = cfg.playerName + "s current rune page is: "
+    elif chatMessage == "!runes" and cfg.selection == "y":
+        runeSetup = "@" + chatName + " " + cfg.playerName + "s current rune page is: "
         for player in watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"]:
-            if player["summonerName"] == cfg.playerName:
-                for rune in player["runes"]:
+            if player["summonerId"] == playerData["id"]:
+                for rune in player["perks"]["perkIds"]:
                     for runeNum, runeName in cfg.allRunes.items():
-                        if rune["runeId"] == runeNum:
-                            runeSetup = runeSetup + " " + str(rune["count"]) + "X " + runeName + ","
-
-        sendmessage(s, runeSetup)
-    elif chatMessage == "!teamelo":
+                        if rune == runeNum:
+                            runeSetup = runeSetup + runeName + ", "
+        sendmessage(s, runeSetup[:-2])
+    elif chatMessage == "!teamelo" and cfg.selection == "y":
         elo(watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"])
+
+
