@@ -6,6 +6,7 @@ from riotwatcher import RiotWatcher
 from twitch import TwitchClient
 
 print("Starting")
+print("a")
 
 # Connect to Riot API
 if cfg.selection == "y":
