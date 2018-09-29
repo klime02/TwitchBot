@@ -1,4 +1,5 @@
 import time
+import datetime
 import cfg
 import socket
 import random
@@ -6,7 +7,6 @@ from riotwatcher import RiotWatcher
 from twitch import TwitchClient
 
 print("Starting")
-print("a")
 
 # Connect to Riot API
 if cfg.selection == "y":
@@ -173,5 +173,30 @@ while True:
         sendmessage(s, runeSetup[:-2])
     elif chatMessage == "!teamelo" and cfg.selection == "y":
         elo(watcher.spectator.by_summoner(cfg.playerRegion, playerData["id"])["participants"])
+    elif chatMessage == "!uptime":
+        streamdata = client.streams.get_stream_by_user(channel_id=channelID)
+        streamstart = streamdata["created_at"]
+        currenttime = datetime.datetime.utcnow()
+        seconds = (currenttime-streamstart).total_seconds()
+        hours = int(seconds // 3600 + 5)
+        minutes = int((seconds % 3600) // 60 + 27)
+        if minutes >= 60:
+            hours = hours + int(minutes/60)
+            minutes = minutes % 60
+        sendmessage(s, streamdata["channel"]["display_name"] + " has been live for: " + ('{} h {} m'.format(hours, minutes)))
+    elif chatMessage == "!followers":
+        followdata = client.channels.get_by_id(channel_id=channelID)
+        numberfollower = followdata["followers"]
+        sendmessage(s, "Xocliw has " + " " + str(numberfollower) + " followers")
+    elif "!follow" in chatMessage:
+        chatlist = chatMessage.split()
+        stringname = chatlist[1]
+        chanid = client.users.translate_usernames_to_ids(usernames=stringname)[0]["id"]
+        print(chanid)
+        chandat = client.channels.get_by_id(channel_id=chanid)
+        laststreamed = chandat["game"]
+        if laststreamed is None:
+            laststreamed = ""
+        sendmessage(s, "Follow " + stringname + " at twitch.tv/" + stringname + " PogChamp" + " Last seen streaming: " + laststreamed)
 
 
